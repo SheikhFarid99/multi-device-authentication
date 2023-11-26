@@ -8,21 +8,27 @@ const body_parser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const requestIp = require('request-ip');
 const moment = require('moment')
-const { middleware } = require('./middleware/authMiddleware')
+const middleware = require('./middleware/authMiddleware')
 const path = require('path')
+const cookie_parser = require('cookie-parser')
 
 const mode = 'pro'
 
+
 app.use(cors({
-    origin: '*'
+    origin: mode !== 'dev' ? '*' : 'http://localhost:5173',
+    credentials: true
 }))
 app.use(body_parser.json())
+app.use(cookie_parser());
 app.use(requestIp.mw())
 
 
 app.post('/api/register', async (req, res) => {
+
     const { email, password, name } = req.body
     const ip = req.clientIp;
+
     try {
         const getUser = await userModel.findOne({ email })
         if (getUser) {
@@ -33,11 +39,13 @@ app.post('/api/register', async (req, res) => {
                 email,
                 password
             })
+            const uniqueToken = Date.now()
             await login_history.create({
                 user_id: user.id,
                 ip,
                 time: moment().format('LLLL'),
-                device: req.headers['user-agent']
+                device: req.headers['user-agent'],
+                token: uniqueToken
             })
 
             const token = await jwt.sign({
@@ -47,6 +55,7 @@ app.post('/api/register', async (req, res) => {
                 expiresIn: '2d'
             })
 
+            res.cookie('user_token', uniqueToken, { expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) })
             return res.status(201).json({ token, message: 'Register success' })
         }
 
@@ -55,12 +64,16 @@ app.post('/api/register', async (req, res) => {
     }
 })
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', middleware.cookie_check, async (req, res) => {
+
     const { email, password, name } = req.body
     const ip = req.clientIp;
+
     try {
         const user = await userModel.findOne({ email })
+
         if (user) {
+
             if (password === user.password) {
 
                 const token = await jwt.sign({
@@ -70,32 +83,53 @@ app.post('/api/login', async (req, res) => {
                     expiresIn: '2d'
                 })
 
-                const device = await login_history.findOne({
-                    $and: [
-                        {
-                            user_id: {
-                                $eq: new mongoose.mongo.ObjectId(user.id)
+                if (req.cookie_token) {
+
+                    const device = await login_history.findOne({
+                        $and: [
+                            {
+                                user_id: {
+                                    $eq: new mongoose.mongo.ObjectId(user.id)
+                                }
+                            },
+                            {
+                                device: {
+                                    $eq: req.headers['user-agent']
+                                }
+                            }, {
+                                token: {
+                                    $eq: req.cookie_token
+                                }
                             }
-                        },
-                        {
-                            device: {
-                                $eq: req.headers['user-agent']
-                            }
-                        }
-                    ]
-                })
-                if (device) {
-                    await login_history.findByIdAndUpdate(device.id, {
-                        ip,
-                        time: moment().format('LLLL'),
+                        ]
                     })
+                    if (device) {
+                        await login_history.findByIdAndUpdate(device.id, {
+                            ip,
+                            time: moment().format('LLLL'),
+                        })
+                    } else {
+                        const uniqueToken = Date.now()
+                        await login_history.create({
+                            user_id: user.id,
+                            ip,
+                            time: moment().format('LLLL'),
+                            device: req.headers['user-agent'],
+                            token: uniqueToken
+                        })
+                        res.cookie('user_token', uniqueToken, { expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) })
+                    }
+
                 } else {
+                    const uniqueToken = Date.now()
                     await login_history.create({
                         user_id: user.id,
                         ip,
                         time: moment().format('LLLL'),
-                        device: req.headers['user-agent']
+                        device: req.headers['user-agent'],
+                        token: uniqueToken
                     })
+                    res.cookie('user_token', uniqueToken, { expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) })
                 }
 
                 return res.status(201).json({ token, message: 'Register success' })
@@ -110,16 +144,27 @@ app.post('/api/login', async (req, res) => {
     }
 })
 
-app.use('/api/login/history', middleware, async (req, res) => {
+app.use('/api/login/history', middleware.cookie_check, middleware.auth, async (req, res) => {
 
     const { _id } = req.userInfo
     try {
-        const login_historys = await login_history.find({ user_id: _id })
+        const login_historys = await login_history.find({ user_id: _id }).sort({ createdAt: -1 })
 
         return res.status(200).json({ login_historys })
 
     } catch (error) {
         console.log(error)
+    }
+})
+
+
+app.use('/api/anather/user/logout/:id', middleware.cookie_check, middleware.auth, async (req, res) => {
+    const { id } = req.params
+    try {
+        await login_history.findByIdAndDelete(id)
+        return res.status(200).json({ message: 'logout success' })
+    } catch (error) {
+
     }
 })
 

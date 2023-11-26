@@ -18,7 +18,7 @@ const Register = () => {
     const submit = async (e) => {
         e.preventDefault()
         try {
-            const { data } = await axios.post(`${base_url}/api/register`, state)
+            const { data } = await axios.post(`${base_url}/api/register`, state, { withCredentials: true })
             localStorage.setItem('user_token', data.token)
             window.location.href = '/'
         } catch (error) {

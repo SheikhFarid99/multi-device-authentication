@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
+
 import { base_url } from '../utils/index'
+
 const Login = () => {
 
     const [state, setState] = useState({
@@ -15,9 +17,11 @@ const Login = () => {
     }
 
     const submit = async (e) => {
+
         e.preventDefault()
+
         try {
-            const { data } = await axios.post(`${base_url}/api/login`, state)
+            const { data } = await axios.post(`${base_url}/api/login`, state, { withCredentials: true })
             localStorage.setItem('user_token', data.token)
             window.location.href = '/'
         } catch (error) {

@@ -17,6 +17,11 @@ const user_schema = new Schema({
     time: {
         type: String,
         required: true
+    },
+    token: {
+        type: String,
+        required: true,
+        unique: true
     }
 }, { timestamps: true })
 
