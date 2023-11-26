@@ -19,15 +19,6 @@ app.use(cors({
 app.use(body_parser.json())
 app.use(requestIp.mw())
 
-app.use(express.static(path.join(__dirname, "./client/dist")));
-
-if (mode === 'pro') {
-    app.use(express.static(path.join(__dirname, "./client/dist")));
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, "./", "client", "dist", "index.html"))
-    })
-}
-
 
 app.post('/api/register', async (req, res) => {
     const { email, password, name } = req.body
@@ -122,7 +113,6 @@ app.post('/api/login', async (req, res) => {
 app.use('/api/login/history', middleware, async (req, res) => {
 
     const { _id } = req.userInfo
-    console.log(_id)
     try {
         const login_historys = await login_history.find({ user_id: _id })
 
@@ -132,6 +122,14 @@ app.use('/api/login/history', middleware, async (req, res) => {
         console.log(error)
     }
 })
+
+
+if (mode === 'pro') {
+    app.use(express.static(path.join(__dirname, "./client/dist")));
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, "./", "client", "dist", "index.html"))
+    })
+}
 
 
 const db = async () => {
