@@ -10,6 +10,10 @@ const user_schema = new Schema({
         type: String,
         required: true
     },
+    device_name: {
+        type: String,
+        required: true
+    },
     ip: {
         type: String,
         required: true

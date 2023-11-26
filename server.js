@@ -11,6 +11,7 @@ const moment = require('moment')
 const middleware = require('./middleware/authMiddleware')
 const path = require('path')
 const cookie_parser = require('cookie-parser')
+const os = require('os');
 
 const mode = 'pro'
 
@@ -28,6 +29,7 @@ app.post('/api/register', async (req, res) => {
 
     const { email, password, name } = req.body
     const ip = req.clientIp;
+    const device_name = os.hostname();
 
     try {
         const getUser = await userModel.findOne({ email })
@@ -43,6 +45,7 @@ app.post('/api/register', async (req, res) => {
             await login_history.create({
                 user_id: user.id,
                 ip,
+                device_name,
                 time: moment().format('LLLL'),
                 device: req.headers['user-agent'],
                 token: uniqueToken
@@ -68,6 +71,7 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
 
     const { email, password, name } = req.body
     const ip = req.clientIp;
+    const device_name = os.hostname();
 
     try {
         const user = await userModel.findOne({ email })
@@ -106,6 +110,7 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
                     if (device) {
                         await login_history.findByIdAndUpdate(device.id, {
                             ip,
+                            device_name,
                             time: moment().format('LLLL'),
                         })
                     } else {
@@ -125,6 +130,7 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
                     await login_history.create({
                         user_id: user.id,
                         ip,
+                        device_name,
                         time: moment().format('LLLL'),
                         device: req.headers['user-agent'],
                         token: uniqueToken
@@ -147,6 +153,7 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
 app.use('/api/login/history', middleware.cookie_check, middleware.auth, async (req, res) => {
 
     const { _id } = req.userInfo
+
     try {
         const login_historys = await login_history.find({ user_id: _id }).sort({ createdAt: -1 })
 
