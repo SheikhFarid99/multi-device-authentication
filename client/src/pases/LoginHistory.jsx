@@ -15,7 +15,7 @@ const LoginHistory = () => {
                 Authorization: `Bearer ${token}`
             }
         }
-
+        console.log(token)
         try {
             const { data } = await axios.get(`${base_url}/api/login/history`, config)
             console.log(data)

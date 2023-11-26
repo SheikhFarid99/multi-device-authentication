@@ -126,7 +126,7 @@ app.use('/api/login/history', middleware, async (req, res) => {
     try {
         const login_historys = await login_history.find({ user_id: _id })
 
-        return res.status(201).json({ login_historys })
+        return res.status(200).json({ login_historys })
 
     } catch (error) {
         console.log(error)
