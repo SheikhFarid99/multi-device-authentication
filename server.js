@@ -120,7 +120,7 @@ app.post('/api/login', async (req, res) => {
 app.use('/api/login/history', middleware, async (req, res) => {
 
     const { _id } = req.userInfo
-
+    console.log(_id)
     try {
         const login_historys = await login_history.find({ user_id: _id })
         return res.status(201).json({ login_historys })

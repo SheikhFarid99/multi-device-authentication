@@ -11,6 +11,7 @@ module.exports.middleware = async (req, res, next) => {
         const token = authorization.split('Bearer ')[1]
         try {
             const user = await jwt.verify(token, 'asdasdasd')
+            console.log(user)
             const device = await login_history.findOne({
                 $and: [
                     {
@@ -25,6 +26,7 @@ module.exports.middleware = async (req, res, next) => {
                     }
                 ]
             })
+            console.log(device)
             if (device) {
                 req.userInfo = {
                     _id: user._id,
