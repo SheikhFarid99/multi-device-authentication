@@ -19,6 +19,8 @@ app.use(cors({
 app.use(body_parser.json())
 app.use(requestIp.mw())
 
+app.use(express.static(path.join(__dirname, "./client/dist")));
+
 if (mode === 'pro') {
     app.use(express.static(path.join(__dirname, "./client/dist")));
     app.get('*', (req, res) => {
@@ -123,6 +125,7 @@ app.use('/api/login/history', middleware, async (req, res) => {
     console.log(_id)
     try {
         const login_historys = await login_history.find({ user_id: _id })
+
         return res.status(201).json({ login_historys })
 
     } catch (error) {
