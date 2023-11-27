@@ -157,7 +157,7 @@ app.use('/api/login/history', middleware.cookie_check, middleware.auth, async (r
     try {
         const login_historys = await login_history.find({ user_id: _id }).sort({ createdAt: -1 })
 
-        return res.status(200).json({ login_historys })
+        return res.status(200).json({ login_historys, info: os.userInfo() })
 
     } catch (error) {
         console.log(error)

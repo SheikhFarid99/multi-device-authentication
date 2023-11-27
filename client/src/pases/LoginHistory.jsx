@@ -27,7 +27,7 @@ const LoginHistory = () => {
                     Authorization: `Bearer ${token}`
                 }
             })
-
+            console.log(data)
             setlogin_historys(data.login_historys || [])
         } catch (error) {
             if (error.response?.status === 409) {
