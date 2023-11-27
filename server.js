@@ -12,6 +12,7 @@ const middleware = require('./middleware/authMiddleware')
 const path = require('path')
 const cookie_parser = require('cookie-parser')
 const os = require('os');
+const DeviceDetector = require('node-device-detector');
 
 const mode = 'pro'
 
@@ -154,10 +155,18 @@ app.use('/api/login/history', middleware.cookie_check, middleware.auth, async (r
 
     const { _id } = req.userInfo
 
+    const detector = new DeviceDetector({
+        clientIndexes: true,
+        deviceIndexes: true,
+        deviceAliasCode: false,
+    });
+    const userAgent = req.headers['user-agent'];
+    const result = detector.detect(userAgent);
+
     try {
         const login_historys = await login_history.find({ user_id: _id }).sort({ createdAt: -1 })
 
-        return res.status(200).json({ login_historys, info: os.userInfo() })
+        return res.status(200).json({ login_historys, info: result })
 
     } catch (error) {
         console.log(error)
