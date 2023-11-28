@@ -23,7 +23,7 @@ class middleware {
                             }
                         },
                         {
-                            device: {
+                            user_agent: {
                                 $eq: req.headers['user-agent']
                             }
                         },

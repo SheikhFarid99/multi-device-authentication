@@ -93,9 +93,6 @@ const LoginHistory = () => {
                                     Device
                                 </th>
                                 <th scope="col" class="px-6 py-3">
-                                    Browser
-                                </th>
-                                <th scope="col" class="px-6 py-3">
                                     Time
                                 </th>
                                 <th scope="col" class="px-6 py-3">
@@ -113,10 +110,7 @@ const LoginHistory = () => {
                                         {h.ip}
                                     </td>
                                     <td class="px-6 py-4">
-                                        {h.device_name}
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        {h.device}
+                                        {h.device_info?.os} {h.device_info?.model} {h.device_info?.browser}
                                     </td>
                                     <td class="px-6 py-4">
                                         {h.time}

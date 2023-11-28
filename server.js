@@ -13,7 +13,6 @@ const path = require('path')
 const cookie_parser = require('cookie-parser')
 const os = require('os');
 const DeviceDetector = require('node-device-detector');
-var platform = require('platform');
 
 const mode = 'pro'
 
@@ -27,11 +26,47 @@ app.use(cookie_parser());
 app.use(requestIp.mw())
 
 
+const get_device_info = (user_agent) => {
+
+    const detector = new DeviceDetector({
+        clientIndexes: true,
+        deviceIndexes: true,
+        deviceAliasCode: false,
+        parseUserAgent: true
+    });
+    const obj = {
+
+    }
+    const result = detector.detect(user_agent);
+
+    if (DeviceHelper.isDesktop(result)) {
+        obj.os = result.os.name
+        obj.model = result.device.model ? result.device.model : ''
+        obj.browser = result.client.name
+    } else {
+        obj.os = result.os.name
+        obj.model = result.device.model ? result.device.model : 'unknown'
+        obj.browser = result.client.name
+    }
+
+    return obj
+}
+
+// { "os": { "name": "Android", "short_name": "AND", "version": "10", "platform": "", "family": "Android" }, "client": { "type": "browser", "name": "Chrome Mobile", "short_name": "CM", "version": "119.0.0.0", "engine": "Blink", "engine_version": "119.0.0.0", "family": "Chrome" }, "device": { "id": "", "type": "smartphone", "brand": "", "model": "" } }
+
+// {"os":{"name":"Android","short_name":"AND","version":"10","platform":"","family":"Android"},"client":{"name":"Facebook","type":"mobile app","version":"435.0.0.32.108"},"device":{"id":"XI","type":"smartphone","brand":"Xiaomi","model":"Redmi 9"}}
+
+// {"os":{"name":"Windows","short_name":"WIN","version":"10","platform":"x64","family":"Windows"},"client":{"type":"browser","name":"Chrome","short_name":"CH","version":"119.0.0.0","engine":"Blink","engine_version":"119.0.0.0","family":"Chrome"},"device":{"id":"","type":"desktop","brand":"","model":""}}
+
+//DeviceHelper.isMobile(result);
+//DeviceHelper.isDesktop(result);
+//DeviceHelper.isTablet(result);
+//DeviceHelper.isSmartphone(result);
+
 app.post('/api/register', async (req, res) => {
 
     const { email, password, name } = req.body
     const ip = req.clientIp;
-    const device_name = os.hostname();
 
     try {
         const getUser = await userModel.findOne({ email })
@@ -47,10 +82,10 @@ app.post('/api/register', async (req, res) => {
             await login_history.create({
                 user_id: user.id,
                 ip,
-                device_name,
-                time: moment().format('LLLL'),
-                device: req.headers['user-agent'],
-                token: uniqueToken
+                time: uniqueToken,
+                user_agent: req.headers['user-agent'],
+                token: uniqueToken,
+                device_info: get_device_info(req.headers['user-agent'])
             })
 
             const token = await jwt.sign({
@@ -71,7 +106,7 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/login', middleware.cookie_check, async (req, res) => {
 
-    const { email, password, name } = req.body
+    const { email, password } = req.body
     const ip = req.clientIp;
     const device_name = os.hostname();
     try {
@@ -98,7 +133,7 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
                                 }
                             },
                             {
-                                device: {
+                                user_agent: {
                                     $eq: req.headers['user-agent']
                                 }
                             }, {
@@ -111,7 +146,6 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
                     if (device) {
                         await login_history.findByIdAndUpdate(device.id, {
                             ip,
-                            device_name,
                             time: moment().format('LLLL'),
                         })
                     } else {
@@ -119,10 +153,10 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
                         await login_history.create({
                             user_id: user.id,
                             ip,
-                            time: moment().format('LLLL'),
-                            device: req.headers['user-agent'],
+                            time: uniqueToken,
+                            user_agent: req.headers['user-agent'],
                             token: uniqueToken,
-                            device_name
+                            device_info: get_device_info(req.headers['user-agent'])
                         })
                         res.cookie('user_token', uniqueToken, { expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) })
                     }
@@ -132,9 +166,9 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
                     await login_history.create({
                         user_id: user.id,
                         ip,
-                        device_name,
-                        time: moment().format('LLLL'),
-                        device: req.headers['user-agent'],
+                        device_info: get_device_info(req.headers['user-agent']),
+                        time: uniqueToken,
+                        user_agent: req.headers['user-agent'],
                         token: uniqueToken
                     })
                     res.cookie('user_token', uniqueToken, { expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) })
@@ -156,19 +190,10 @@ app.use('/api/login/history', middleware.cookie_check, middleware.auth, async (r
 
     const { _id } = req.userInfo
 
-    const detector = new DeviceDetector({
-        clientIndexes: true,
-        deviceIndexes: true,
-        deviceAliasCode: false,
-        parseUserAgent: true
-    });
-    const userAgent = req.headers['user-agent'];
-    const result = detector.detect(userAgent);
-
     try {
         const login_historys = await login_history.find({ user_id: _id }).sort({ createdAt: -1 })
-        await login_history.updateOne({ user_id: new mongoose.mongo.ObjectId(_id) }, { os: JSON.stringify(result) })
-        return res.status(200).json({ login_historys, info: result })
+
+        return res.status(200).json({ login_historys})
 
     } catch (error) {
         console.log(error)
@@ -213,3 +238,5 @@ const db = async () => {
 db()
 
 app.listen(5000, () => console.log(`server is listening on port 5000!`))
+
+

@@ -1,16 +1,13 @@
 const { Schema, model } = require('mongoose')
 
 const user_schema = new Schema({
+
     user_id: {
         type: Schema.Types.ObjectId,
         ref: 'users',
         required: true
     },
-    device: {
-        type: String,
-        required: true
-    },
-    device_name: {
+    user_agent: {
         type: String,
         required: true
     },
@@ -27,9 +24,19 @@ const user_schema = new Schema({
         required: true,
         unique: true
     },
-    os: {
-        type: String,
-        default: ''
+    device_info: {
+        os: {
+            type: String,
+            default: ''
+        },
+        model: {
+            type: String,
+            default: ''
+        },
+        browser: {
+            type: String,
+            default: ''
+        }
     }
 }, { timestamps: true })
 
