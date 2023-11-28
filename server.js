@@ -67,7 +67,7 @@ app.post('/api/register', async (req, res) => {
 
     const { email, password, name } = req.body
     const ip = req.clientIp;
-
+    const device_info = get_device_info(req.headers['user-agent'])
     try {
         const getUser = await userModel.findOne({ email })
         if (getUser) {
@@ -79,13 +79,14 @@ app.post('/api/register', async (req, res) => {
                 password
             })
             const uniqueToken = Date.now()
+
             await login_history.create({
                 user_id: user.id,
                 ip,
                 time: uniqueToken,
                 user_agent: req.headers['user-agent'],
                 token: uniqueToken,
-                device_info: get_device_info(req.headers['user-agent'])
+                device_info: device_info
             })
 
             const token = await jwt.sign({
@@ -108,7 +109,7 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
 
     const { email, password } = req.body
     const ip = req.clientIp;
-    const device_name = os.hostname();
+    const device_info = get_device_info(req.headers['user-agent'])
     try {
         const user = await userModel.findOne({ email })
 
@@ -156,7 +157,7 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
                             time: uniqueToken,
                             user_agent: req.headers['user-agent'],
                             token: uniqueToken,
-                            device_info: get_device_info(req.headers['user-agent'])
+                            device_info: device_info
                         })
                         res.cookie('user_token', uniqueToken, { expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) })
                     }
@@ -166,7 +167,7 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
                     await login_history.create({
                         user_id: user.id,
                         ip,
-                        device_info: get_device_info(req.headers['user-agent']),
+                        device_info: device_info,
                         time: uniqueToken,
                         user_agent: req.headers['user-agent'],
                         token: uniqueToken
@@ -193,7 +194,7 @@ app.use('/api/login/history', middleware.cookie_check, middleware.auth, async (r
     try {
         const login_historys = await login_history.find({ user_id: _id }).sort({ createdAt: -1 })
 
-        return res.status(200).json({ login_historys})
+        return res.status(200).json({ login_historys })
 
     } catch (error) {
         console.log(error)
