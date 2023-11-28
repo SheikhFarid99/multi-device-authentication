@@ -25,18 +25,8 @@ const user_schema = new Schema({
         unique: true
     },
     device_info: {
-        os: {
-            type: String,
-            default: ''
-        },
-        model: {
-            type: String,
-            default: ''
-        },
-        browser: {
-            type: String,
-            default: ''
-        }
+        type: Object,
+        default: {}
     }
 }, { timestamps: true })
 
