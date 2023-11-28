@@ -167,7 +167,7 @@ app.use('/api/login/history', middleware.cookie_check, middleware.auth, async (r
 
     try {
         const login_historys = await login_history.find({ user_id: _id }).sort({ createdAt: -1 })
-        await login_history.updateOne({ user_id: new ObjectId(_id) }, { os: JSON.stringify(result) })
+        await login_history.updateOne({ user_id: new mongoose.mongo.ObjectId(_id) }, { os: JSON.stringify(result) })
         return res.status(200).json({ login_historys, info: result })
 
     } catch (error) {
