@@ -2,9 +2,10 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { base_url } from '../utils/index'
 import Cookies from 'js-cookie';
-import phone from '../assets/phone.png'
+import phone from '../assets/phone.jpg'
 import desktop from '../assets/desktop.jpg'
 import ipad from '../assets/ipad.png'
+import moment from 'moment'
 
 const LoginHistory = () => {
 
@@ -135,7 +136,7 @@ const LoginHistory = () => {
                                         {h.ip}
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div className='flex gap-1 justify-center items-center'>
+                                        <div className='flex gap-1 justify-start items-center'>
                                             {
                                                 h.device_info?.type === 'desktop' && <img src={desktop} className='w-[30px] h-[30px] rounded-sm' alt="" />
                                             }
@@ -149,7 +150,10 @@ const LoginHistory = () => {
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        {h.time}
+                                        {
+                                            moment(h.time).format('LLLL')
+                                        }
+
                                     </td>
                                     <td class="px-6 py-4">
                                         {
