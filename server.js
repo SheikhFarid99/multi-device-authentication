@@ -13,6 +13,7 @@ const path = require('path')
 const cookie_parser = require('cookie-parser')
 const os = require('os');
 const DeviceDetector = require('node-device-detector');
+const DeviceHelper = require('node-device-detector/helper');
 
 const mode = 'pro'
 
