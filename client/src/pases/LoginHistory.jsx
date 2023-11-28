@@ -2,6 +2,9 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { base_url } from '../utils/index'
 import Cookies from 'js-cookie';
+import phone from '../assets/phone.png'
+import desktop from '../assets/desktop.jpg'
+import ipad from '../assets/ipad.png'
 
 const LoginHistory = () => {
 
@@ -71,12 +74,34 @@ const LoginHistory = () => {
 
         }
     }
+
+    const all_logout = async () => {
+
+        try {
+
+            try {
+                await axios.get(`${base_url}/api/anather/user/logout-all`, {
+                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                })
+                get_login_history()
+            } catch (error) {
+                console.log(error)
+            }
+
+        } catch (error) {
+
+        }
+    }
+
     return (
         <div className='w-screen min-h-screen flex justify-center items-center bg-slate-200'>
             <div className='w-[90%] bg-white p-4'>
                 <div className='flex justify-between items-center'>
                     <h2 className='text-xl font-bold'>Login history</h2>
-                    <button className='py-1 px-2 text-white bg-purple-500 rounded-md'>All Logout</button>
+                    <button onClick={all_logout} className='py-1 px-2 text-white bg-purple-500 rounded-md'>Log out of all sessions</button>
                 </div>
 
                 <div class="relative overflow-x-auto  p-4">
@@ -110,7 +135,18 @@ const LoginHistory = () => {
                                         {h.ip}
                                     </td>
                                     <td class="px-6 py-4">
-                                        {h.device_info?.os} {h.device_info?.model} {h.device_info?.browser}
+                                        <div className='flex gap-1 justify-center items-center'>
+                                            {
+                                                h.device_info?.type === 'desktop' && <img src={desktop} className='w-[30px] h-[30px] rounded-sm' alt="" />
+                                            }
+                                            {
+                                                h.device_info?.type === 'tablet' && <img src={ipad} className='w-[30px] h-[30px] rounded-sm' alt="" />
+                                            }
+                                            {
+                                                h.device_info?.type === 'smartphone' && <img src={phone} className='w-[30px] h-[30px] rounded-sm' alt="" />
+                                            }
+                                            <span>{h.device_info?.os} {h.device_info?.model} {h.device_info?.browser}</span>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4">
                                         {h.time}

@@ -13,7 +13,6 @@ const path = require('path')
 const cookie_parser = require('cookie-parser')
 const os = require('os');
 const DeviceDetector = require('node-device-detector');
-const DeviceHelper = require('node-device-detector/helper');
 
 const mode = 'pro'
 
@@ -40,29 +39,13 @@ const get_device_info = (user_agent) => {
     }
     const result = detector.detect(user_agent);
 
-    if (DeviceHelper.isDesktop(result)) {
-        obj.os = result.os.name
-        obj.model = result.device.model ? result.device.model : ''
-        obj.browser = result.client.name
-    } else {
-        obj.os = result.os.name
-        obj.model = result.device.model ? result.device.model : 'unknown'
-        obj.browser = result.client.name
-    }
+    obj.os = result.os.name
+    obj.model = result.device.model ? result.device.model : ''
+    obj.browser = result.client.name
+    obj.type = result.device.type
 
     return obj
 }
-
-// { "os": { "name": "Android", "short_name": "AND", "version": "10", "platform": "", "family": "Android" }, "client": { "type": "browser", "name": "Chrome Mobile", "short_name": "CM", "version": "119.0.0.0", "engine": "Blink", "engine_version": "119.0.0.0", "family": "Chrome" }, "device": { "id": "", "type": "smartphone", "brand": "", "model": "" } }
-
-// {"os":{"name":"Android","short_name":"AND","version":"10","platform":"","family":"Android"},"client":{"name":"Facebook","type":"mobile app","version":"435.0.0.32.108"},"device":{"id":"XI","type":"smartphone","brand":"Xiaomi","model":"Redmi 9"}}
-
-// {"os":{"name":"Windows","short_name":"WIN","version":"10","platform":"x64","family":"Windows"},"client":{"type":"browser","name":"Chrome","short_name":"CH","version":"119.0.0.0","engine":"Blink","engine_version":"119.0.0.0","family":"Chrome"},"device":{"id":"","type":"desktop","brand":"","model":""}}
-
-//DeviceHelper.isMobile(result);
-//DeviceHelper.isDesktop(result);
-//DeviceHelper.isTablet(result);
-//DeviceHelper.isSmartphone(result);
 
 app.post('/api/register', async (req, res) => {
 
@@ -102,7 +85,7 @@ app.post('/api/register', async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error)
+        return res.status(500).json({ message: error.message })
     }
 })
 
@@ -184,7 +167,7 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
             return res.status(404).json({ message: 'User not found' })
         }
     } catch (error) {
-        console.log(error.message)
+        return res.status(500).json({ message: error.message })
     }
 })
 
@@ -198,7 +181,7 @@ app.use('/api/login/history', middleware.cookie_check, middleware.auth, async (r
         return res.status(200).json({ login_historys })
 
     } catch (error) {
-        console.log(error)
+        return res.status(500).json({ message: error.message })
     }
 })
 
@@ -209,7 +192,37 @@ app.use('/api/anather/user/logout/:id', middleware.cookie_check, middleware.auth
         await login_history.findByIdAndDelete(id)
         return res.status(200).json({ message: 'logout success' })
     } catch (error) {
+        return res.status(500).json({ message: error.message })
+    }
+})
 
+app.use('/api/anather/user/logout-all', middleware.cookie_check, middleware.auth, async (req, res) => {
+
+    const { _id } = req.userInfo
+
+    try {
+
+        await login_history.deleteMany({
+            $and: [
+                {
+                    user_id: {
+                        $ne: new mongoose.mongo.ObjectId(_id)
+                    }
+                },
+                {
+                    user_agent: {
+                        $ne: req.headers['user-agent']
+                    }
+                }, {
+                    token: {
+                        $ne: req.cookie_token
+                    }
+                }
+            ]
+        })
+        return res.status(200).json({ message: 'logout all  success' })
+    } catch (error) {
+        return res.status(500).json({ message: error.message })
     }
 })
 
