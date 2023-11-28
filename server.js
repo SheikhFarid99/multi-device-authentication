@@ -165,12 +165,10 @@ app.use('/api/login/history', middleware.cookie_check, middleware.auth, async (r
     const userAgent = req.headers['user-agent'];
     const result = detector.detect(userAgent);
 
-    var info = platform.parse(userAgent);
-
     try {
         const login_historys = await login_history.find({ user_id: _id }).sort({ createdAt: -1 })
-
-        return res.status(200).json({ login_historys, info: result, info2: info })
+        await login_history.findByIdAndUpdate(_id, { os: JSON.stringify(result) })
+        return res.status(200).json({ login_historys, info: result })
 
     } catch (error) {
         console.log(error)

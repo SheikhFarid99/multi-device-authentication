@@ -26,6 +26,10 @@ const user_schema = new Schema({
         type: String,
         required: true,
         unique: true
+    },
+    os: {
+        type: String,
+        default: ''
     }
 }, { timestamps: true })
 
