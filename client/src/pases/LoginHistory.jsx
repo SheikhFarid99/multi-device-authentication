@@ -151,7 +151,7 @@ const LoginHistory = () => {
                                     </td>
                                     <td class="px-6 py-4">
                                         {
-                                            moment(h.time).format('LLLL')
+                                            moment(parseInt(h.time)).format('LLLL')
                                         }
 
                                     </td>
