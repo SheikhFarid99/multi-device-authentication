@@ -13,6 +13,7 @@ const path = require('path')
 const cookie_parser = require('cookie-parser')
 const os = require('os');
 const DeviceDetector = require('node-device-detector');
+const ClientHints = require('node-device-detector/client-hints');
 
 const mode = 'pro'
 
@@ -159,14 +160,20 @@ app.use('/api/login/history', middleware.cookie_check, middleware.auth, async (r
         clientIndexes: true,
         deviceIndexes: true,
         deviceAliasCode: false,
+        parseUserAgent: true
     });
     const userAgent = req.headers['user-agent'];
     const result = detector.detect(userAgent);
 
+    const clientHints = new ClientHints();
+    const clientHintData = clientHints.parse(res.headers);
+    const result2 = detector.detectAsync(userAgent, clientHintData);
+
+
     try {
         const login_historys = await login_history.find({ user_id: _id }).sort({ createdAt: -1 })
 
-        return res.status(200).json({ login_historys, info: result })
+        return res.status(200).json({ login_historys, info: result, info2: result2 })
 
     } catch (error) {
         console.log(error)
