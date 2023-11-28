@@ -73,7 +73,6 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
     const { email, password, name } = req.body
     const ip = req.clientIp;
     const device_name = os.hostname();
-
     try {
         const user = await userModel.findOne({ email })
 
@@ -121,7 +120,8 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
                             ip,
                             time: moment().format('LLLL'),
                             device: req.headers['user-agent'],
-                            token: uniqueToken
+                            token: uniqueToken,
+                            device_name
                         })
                         res.cookie('user_token', uniqueToken, { expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) })
                     }
@@ -147,7 +147,7 @@ app.post('/api/login', middleware.cookie_check, async (req, res) => {
             return res.status(404).json({ message: 'User not found' })
         }
     } catch (error) {
-
+        console.log(error.message)
     }
 })
 
