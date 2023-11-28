@@ -1,4 +1,4 @@
-const mode = 'dev'
+const mode = 'pro'
 let base_url = ''
 
 if (mode === 'dev') {
