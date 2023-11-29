@@ -206,7 +206,7 @@ app.use('/api/anather/user/logout-all', middleware.cookie_check, middleware.auth
             $and: [
                 {
                     user_id: {
-                        $ne: new mongoose.mongo.ObjectId(_id)
+                        $eq: new mongoose.mongo.ObjectId(_id)
                     }
                 },
                 {

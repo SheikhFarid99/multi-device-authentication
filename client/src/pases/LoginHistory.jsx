@@ -79,22 +79,18 @@ const LoginHistory = () => {
     const all_logout = async () => {
 
         try {
-
-            try {
-                await axios.get(`${base_url}/api/anather/user/logout-all`, {
-                    withCredentials: true,
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                })
-                get_login_history()
-            } catch (error) {
-                console.log(error)
-            }
-
+            const { data } = await axios.get(`${base_url}/api/anather/user/logout-all`, {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            console.log(data)
+            get_login_history()
         } catch (error) {
-
+            console.log(error)
         }
+
     }
 
     return (
