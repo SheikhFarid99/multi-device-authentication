@@ -129,7 +129,7 @@ const LoginHistory = () => {
                                         {i + 1}
                                     </th>
                                     <td class="px-6 py-4">
-                                        {h.ip}
+                                        11.11.11.11
                                     </td>
                                     <td class="px-6 py-4">
                                         <div className='flex gap-1 justify-start items-center'>
