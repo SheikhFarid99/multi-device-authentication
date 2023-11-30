@@ -1,8 +1,8 @@
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
-const userModel = require('./models/users')
-const login_history = require('./models/login_history')
+const userModel = require('./model/users')
+const login_history = require('./model/login_history')
 const cors = require('cors')
 const body_parser = require('body-parser')
 const jwt = require('jsonwebtoken')
@@ -210,10 +210,6 @@ app.use('/api/anather/user/logout-all', middleware.cookie_check, middleware.auth
                     }
                 },
                 {
-                    user_agent: {
-                        $ne: req.headers['user-agent']
-                    }
-                }, {
                     token: {
                         $ne: req.cookie_token
                     }

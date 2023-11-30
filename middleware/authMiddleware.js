@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const login_history = require('../models/login_history')
+const login_history = require('../model/login_history')
 const mongoose = require('mongoose')
 
 class middleware {
